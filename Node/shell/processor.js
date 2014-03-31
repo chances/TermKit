@@ -1,6 +1,6 @@
-var command = require('shell/command'),
-    returnMeta = require('misc').returnMeta,
-    autocomplete = require('shell/autocomplete').autocomplete;
+var command = require('./command'),
+    returnMeta = require('../misc').returnMeta,
+    autocomplete = require('./autocomplete').autocomplete;
 
 /**
  * Message processor.

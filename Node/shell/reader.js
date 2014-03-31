@@ -1,12 +1,12 @@
 var fs = require('fs'),
-    meta = require('shell/meta'),
-    view = require('view/view'),
-    asyncCallback = require('misc').asyncCallback;
-    async = require('misc').async,
-    extend = require('misc').extend,
-    JSONPretty = require('misc').JSONPretty,
-    composePath = require('misc').composePath,
-    expandPath = require('misc').expandPath;
+    meta = require('./meta'),
+    view = require('../view/view'),
+    asyncCallback = require('../misc').asyncCallback;
+    async = require('../misc').async,
+    extend = require('../misc').extend,
+    JSONPretty = require('../misc').JSONPretty,
+    composePath = require('../misc').composePath,
+    expandPath = require('../misc').expandPath;
 
 // Is x an object?
 function isObject(x) {

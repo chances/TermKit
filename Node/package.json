@@ -1,0 +1,17 @@
+{
+  "name": "nodekit",
+  "version": "0.0.1",
+  "description": "Experimental next gen terminal platform",
+  "main": "nodekit.js",
+  "dependencies": {
+    "socket.io": "^0.9.16",
+    "mime": "^1.2.11",
+    "socket.io-client": "^0.9.16"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test.js"
+  },
+  "author": "Steven Wittens",
+  "license": "MIT"
+}

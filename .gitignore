@@ -15,3 +15,5 @@ TermKit.app
 *.pbxuser
 *.perspectivev3
 
+# nide stuff
+.nide

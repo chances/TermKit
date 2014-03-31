@@ -1,5 +1,5 @@
 var fs = require('fs'),
-    builtin = require('shell/builtin/builtin');
+    builtin = require('./builtin/builtin');
 
 /*
 

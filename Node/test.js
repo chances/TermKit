@@ -5,21 +5,17 @@ var termkit = {
   version: 1,
   test: true,
 };
-require.paths.unshift('./socket.io-node/lib');
-require.paths.unshift('.');
-require.paths.unshift('shell');
-require.paths.unshift('../Shared/');
 
-var whenDone = require('misc').whenDone;
+var whenDone = require('./misc').whenDone;
 var EventEmitter = require("events").EventEmitter;
 
-var router = require("router");
-var processor = require("shell/processor");
-var meta = require("shell/meta");
-var reader = require("shell/reader");
-var autocomplete = require("shell/autocomplete");
-var misc = require("misc");
-var grep = require("shell/builtin/grep");
+var router = require("./router");
+var processor = require("./shell/processor");
+var meta = require("./shell/meta");
+var reader = require("./shell/reader");
+var autocomplete = require("./shell/autocomplete");
+var misc = require("./misc");
+var grep = require("./shell/builtin/grep");
 
 var asserts = [];
 function assert(condition, message) {
@@ -56,7 +52,7 @@ function mockClient(flow, callback) {
       client.emit('message', message);
     }, i * 100);
   })(flow[i]);
-  
+
   setTimeout(track(function () {
     callback(messages, success);
     r.disconnect();
@@ -145,7 +141,7 @@ function testCommands(assert) {
     { query: 5, method: 'shell.run', args: { tokens: [ 'cat', 'test.js' ], ref: 4 } },
   ], function (messages, success) {
     /*
-    for (i in messages) { 
+    for (i in messages) {
       console.log(messages[i]);
       messages[i].args && messages[i].args.objects && console.log('Objects', messages[i].args.objects);
     }
@@ -160,10 +156,10 @@ function testCommands(assert) {
  */
 function testMeta(assert) {
   var headers, set, string;
-  
+
   // Test basic getters and setters.
   headers = new meta.headers();
-  
+
   headers.set('Content-Type', 'text/plain');
   assert(headers.get('Content-Type') == 'text/plain', 'Value getter/setter');
 
@@ -173,7 +169,7 @@ function testMeta(assert) {
   headers.set('Content-Type', [ 'text/html', { 'charset': 'iso-8859-1' } ]);
   assert(headers.get('Content-Type') == 'text/html' &&
          headers.get('Content-Type', 'charset') == 'iso-8859-1', 'Combined getter/setter');
-  
+
   // Test multiple value getters/setters.
   headers.set('Accept-Encoding', [ 'compress', 'gzip' ]);
 
@@ -225,7 +221,7 @@ function testMeta(assert) {
   string = 'Mozilla/5.0 (Macintosh; U; (Intel Mac OS X 10_6_7); en-ca) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27';
   set = headers.parseValue(string, true);
   assert(headers.parseValue(string) == string, "Pass-through comments safely");
-         
+
   // Parse entire set of headers at once.
   headers.parse([
     'Content-Type: text/plain;\r\n charset="utf-16"',
@@ -245,7 +241,7 @@ function testMeta(assert) {
   assert(set.length == 6 && set[0] == 'application/xml' && set[5] == '*/*', 'Identical properties');
   set = headers.get('Accept', 'q');
   assert(set.length == 6 && typeof set[1] == 'undefined' && set[2] == '0.9' && set[3] == '0.8' && set[5] == '0.5', 'Identical property parameters');
-  
+
   // Generate headers back.
   var string = headers.generate();
   assert(/\r\n\r\n$/(string), 'Headers end in CRLF x2');
@@ -258,7 +254,7 @@ function testMeta(assert) {
 
   // Test raw set from mime-like source.
   headers = new meta.headers();
-  
+
   headers.set('Content-Type', 'text/plain; charset=utf-8', null, true);
   console.log(headers.fields);
   console.log(headers.params);
@@ -277,7 +273,7 @@ function testAutocomplete(assert) {
   ], function (messages, success) {
     /*
     var i, j;
-    for (i in messages) { 
+    for (i in messages) {
       for (j in messages[i].args.matches) {
         console.log(messages[i].args.matches[j]);
       }
@@ -286,7 +282,7 @@ function testAutocomplete(assert) {
     var last = messages[messages.length - 1];
     assert(last && last.success && last.answer == 7, "Autocomplete c command");
   });
-  
+
   auto.process(process.cwd(), [], [ 'c' ], 0, function (m) {
     assert(m && m.length == 3 &&
            m[0].label == 'cat'    && m[0].type == 'command' &&
@@ -373,7 +369,7 @@ function mockPipes() {
  * Test argument parsing.
  */
 function testParseArgs(assert) {
-  
+
   var args = misc.parseArgs([ 'grep', '-v', 'foo bar', '--magic', '7', '--a', '--b' ]);
   assert(args.values.length == 1 && args.values[0] == 'foo bar', "Argument values");
   assert(args.options.v && args.options.a && args.options.b && (args.options.magic == '7'),
@@ -383,14 +379,14 @@ function testParseArgs(assert) {
    assert(args.values.length == 1 && args.values[0] == 'foo bar', "Argument values");
    assert(args.options.v && args.options.a && args.options.b && (args.options.magic == '7'),
           "Compact argument options");
-  
+
 }
 
 /**
  * Test grep.js
  */
 function testGrep(assert) {
-  
+
   var handler = grep.main,
       exit = function () {},
       headers, content, pipes;
@@ -414,7 +410,7 @@ function testGrep(assert) {
            lines[1] == 'baz' && lines[2] == 'ccbacc',
            "Grep plaintext lines");
   });
-  
+
   headers = new meta.headers();
   content = "foo\nbar\nbaz\nbingo\nccbacc\n\n\nfffuuu\n";
   headers.set('Content-Type', 'text/plain');
@@ -434,7 +430,7 @@ function testGrep(assert) {
            lines[1] == 'bingo' && lines[2] == '' && lines[3] == '' && lines[4] == 'fffuuu',
            "Grep plaintext lines (negative)");
   });
-  
+
   headers = new meta.headers();
   content = "foo\nbar\nbaz\nbingo\nccbacc\n\n\nfffuuu\n";
   headers.set('Content-Type', 'text/plain');
@@ -442,7 +438,7 @@ function testGrep(assert) {
   pipes.dataIn.emit('data', buffer(headers.generate()));
   pipes.dataIn.emit('data', buffer(content));
   pipes.dataIn.emit('end');
-  
+
   // JSON grep.
   pipes = mockPipes();
   handler([ 'grep', 'ba' ], pipes, exit);
@@ -453,7 +449,7 @@ function testGrep(assert) {
     assert(data == '{"foo":"bar","baz":"bang"}',
            "Grep JSON object");
   });
-  
+
   headers = new meta.headers();
   content = '{"foo":"bar","baz":"bang","bingo":"fffuu"}';
   headers.set('Content-Type', 'application/json');
@@ -472,7 +468,7 @@ function testGrep(assert) {
     assert(data == '{"bingo":"fffuu"}',
            "Grep JSON object (negative)");
   });
-  
+
   headers = new meta.headers();
   content = '{"foo":"bar","baz":"bang","bingo":"fffuu"}';
   headers.set('Content-Type', 'application/json');
@@ -491,7 +487,7 @@ function testGrep(assert) {
     assert(data == '["xXx",{"foo":"XX","baz":"X"},["XX","XXX"]]',
            "Grep complex JSON array/object");
   });
-  
+
   headers = new meta.headers();
   content = '[ "---", "xXx", { "foo": "XX", "bar": "YY", "baz": "X" }, { "meh": "no" }, [ 1, "XX", 3, "XXX" ]]';
   headers.set('Content-Type', 'application/json');
@@ -510,7 +506,7 @@ function testGrep(assert) {
     assert(data == '[{"bar":"YY","baz":"X"},{"mah":"no"}]',
            "Grep complex JSON array/object (keys)");
   });
-  
+
   headers = new meta.headers();
   content = '[ "---", "xXx", { "foo": "XX", "bar": "YY", "baz": "X" }, { "mah": "no" }, [ {"foo":"bar"}, "XX", 3, "XXX" ]]';
   headers.set('Content-Type', 'application/json');
@@ -548,7 +544,7 @@ function testPipe(assert) {
     { query: 8, method: 'shell.run', args: { tokens: [ [ 'ls' ], [ 'grep', '.js' ] ], ref: 7 } },
   ], function (messages, success) {
     /*
-    for (i in messages) { 
+    for (i in messages) {
       console.log(messages[i]);
       messages[i].args && messages[i].args.objects && console.log('Objects', messages[i].args.objects);
     }
@@ -556,7 +552,7 @@ function testPipe(assert) {
     var last = messages[messages.length - 1];
     assert(last.success && last.answer == 8, "Run pipelined command");
   });
-  
+
 }
 
 /**
@@ -575,7 +571,7 @@ function testFilereader(assert) {
   var pipe;
 
   // Test type coercion.
-  
+
   pipe = new reader.filesReader([ '../termkit.txt' ], function () {
     return { begin: function (headers) {
       assert(headers.get('Content-Type') == 'text/plain', 'Type for txt');

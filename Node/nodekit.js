@@ -1,10 +1,11 @@
 #!/usr/bin/env node
+
 var termkit = {
   version: 1,
 };
 
 // Load requirements.
-var http = require('http'),  
+var http = require('http'),
     io = require('socket.io'),
     router = require("./router");
 
@@ -12,13 +13,16 @@ var http = require('http'),
 var config = require('./config').getConfig();
 
 // Set up http server.
-var server = http.createServer(function (request, result) { 
-//  result.writeHeader(200, {'Content-Type': 'text/html'}); 
+var server = http.createServer(function (request, result) {
+//  result.writeHeader(200, {'Content-Type': 'text/html'});
 //  result.writeBody('<h1>TermKit</h1>');
-//  result.finish(); 
+//  result.finish();
 });
 
-server.listen(2222);
+const port = 2222
+server.listen(port, () => {
+    if (server.listening) console.log(`Listening on port ${port}`);
+});
 
 // Set up WebSocket and handlers.
 var ioServer = io.listen(server);

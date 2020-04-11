@@ -5,7 +5,7 @@ if (typeof exports == 'undefined') {
 }
 
 exports.protocol = function (connection, handler, autoconnect) {
-  
+
   this.connection = connection;
   this.handler = handler;
   this.version = '1';
@@ -14,30 +14,30 @@ exports.protocol = function (connection, handler, autoconnect) {
   this.counter = 1;
 
   this.agreed = false;
-  
+
   var that = this;
   connection.on('connect', function () {
     that.handshake();
-  }); 
+  });
   connection.on('message', function (data) {
     that.receive(data);
   });
   connection.on('disconnect', function () {
     that.handler.disconnect && that.handler.disconnect();
   });
-  
+
   autoconnect && this.handshake();
 };
 
 exports.protocol.prototype = {
-  
+
   handshake: function () {
     this.notify(null, null, {
       termkit: this.version,
       timestamp: +new Date(),
     });
   },
-  
+
   process: function (message) {
 
     // Version check.
@@ -56,7 +56,7 @@ exports.protocol.prototype = {
     if (typeof message.method == 'string') {
       this.handler && this.handler.dispatch(message);
     }
-    
+
     // An answer to a query.
     else if (typeof message.answer == 'number') {
       var callback = this.callbacks[message.answer];
@@ -66,25 +66,25 @@ exports.protocol.prototype = {
       }
     }
   },
-  
+
   query: function (method, args, meta, callback) {
     meta = meta || {};
     meta.query = this.counter++;
-    
+
     this.callbacks[meta.query] = callback;
     this.notify(method, args, meta);
   },
-  
+
   answer: function (query, args, meta) {
     meta = meta || {};
     meta.answer = query;
 
     this.notify(null, args, meta);
   },
-  
+
   notify: function (method, args, meta) {
     meta = meta || {};
-    
+
     if (method) {
       meta.method = method;
     }
@@ -94,7 +94,7 @@ exports.protocol.prototype = {
 
     this.send(meta);
   },
-  
+
   send: function (message) {
     if (typeof message == 'object') {
       if (debug) {
@@ -104,10 +104,10 @@ exports.protocol.prototype = {
         out.push(message);
         console.log.apply(console, out);
       }
-      this.connection.json.send(message);
+      this.connection.send(message);
     }
   },
-  
+
   receive: function (message) {
     if (typeof message == 'object') {
       if (debug) {
@@ -126,5 +126,5 @@ exports.protocol.prototype = {
       this.process(message);
     }
   },
-  
+
 };

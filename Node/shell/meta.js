@@ -39,7 +39,7 @@ function quote(string) {
 exports.headers = function () {
   this.fields = {};
   this.params = {};
-  
+
   // Parsing hints.
   this.hints = {
     'Content-Type':        { params: true },
@@ -52,21 +52,21 @@ exports.headers = function () {
 }
 
 exports.headers.prototype = {
-  
+
   /**
    * Set header parsing hint.
    */
   hint: function (key, args) {
     this.hints[key] = args;
   },
-  
+
   /**
    * Return all values + parameters for a key.
    */
   all: function (key) {
     return [ this.fields[key], this.params[key] ];
   },
-  
+
   /**
    * Get one value or parameter.
    */
@@ -85,14 +85,14 @@ exports.headers.prototype = {
    * -- Single setters
    * set(key, value)
    * set(key, param, value)
-   * 
+   *
    * -- Combined value/param setter.
    * set(key, [ value, { param: value, param: value } ])
-   * 
+   *
    * -- Multi-value setter.
    * set(key, [ value, value, value ])
    * set(key, [ [ value, { param: value, param: value } ], [ value, { param: value, param: value } ] ])
-   * 
+   *
    * -- Generic hash syntax.
    * set({
    *   key: value,
@@ -103,29 +103,29 @@ exports.headers.prototype = {
    */
   set: function (keyObject, paramValue, value, raw) {
     var i, j;
-    
+
     // Raw set to parse individual value from other source.
     if (raw) {
       var spec = this.hints[keyObject] || {};
       this.set(keyObject, this.parseValue(paramValue, spec.params));
       return;
     }
-    
+
     // Remove key.
     if (isString(keyObject) && (typeof paramValue == 'undefined' || paramValue === null)) {
       delete this.fields[keyObject];
       delete this.params[keyObject];
       return;
     }
-    
+
     // Set single key.
     if (isString(keyObject)) {
-      
+
       // Advanced syntax,
       if (isArray(paramValue)) {
         // Ignore empties.
         if (paramValue.length == 0) return;
-        
+
         // Check type of last element.
         if (isArray(paramValue[paramValue.length - 1])) {
           // Array of arrays [ [ 'value', { params } ], [ 'value', { params } ] ].
@@ -156,7 +156,7 @@ exports.headers.prototype = {
           }
         }
         else if (isString(paramValue[paramValue.length - 1])) {
-          // Array [ value, value, value ]       
+          // Array [ value, value, value ]
           // Multi value field without params.
           this.fields[keyObject] = [];
           this.params[keyObject] = {};
@@ -165,7 +165,7 @@ exports.headers.prototype = {
           }
         }
         else if (paramValue.length == 2 && isObject(paramValue[1])) {
-          // Array [ value, { params } ] 
+          // Array [ value, { params } ]
           // Single value field with params.
           this.set(keyObject, paramValue[0]);
           for (i in paramValue[1]) {
@@ -180,7 +180,7 @@ exports.headers.prototype = {
             this.params[keyObject] = {};
           }
           this.params[keyObject][paramValue] = value;
-        }        
+        }
       }
       // Set normal value.
       else {
@@ -196,7 +196,7 @@ exports.headers.prototype = {
     }
 
   },
-  
+
   /**
    * Parse headers from a MIME stream.
    */
@@ -222,7 +222,7 @@ exports.headers.prototype = {
 
       // Hints for field parsing.
       var spec = this.hints[key] || {};
-      
+
       if (spec.multi) {
         // Parse out multiple fields.
         var tokens = string.split(/,[ \t]*/g), that = this,
@@ -246,22 +246,22 @@ exports.headers.prototype = {
       return string.replace(/"([^"\\]|\\.)+"/g, function (string) {
         string = string.replace(/\\(.)/g, '$1');
         return string.substring(1, string.length - 1);
-      });      
+      });
     }
 
     function unliteral(string) {
       return string.replace(/\[([^\[\]\\]|\\.)+\]/g, function (string) {
         string = string.replace(/\\(.)/g, '$1');
         return string.substring(1, string.length - 1);
-      });      
+      });
     }
-    
+
     if (params) {
       var value = null,
           params = {},
           stack = [],
           work = string;
-          
+
       function munch() {
         stack = stack.join('');
 
@@ -281,7 +281,7 @@ exports.headers.prototype = {
         key = null;
         stack = [];
       }
-      
+
       while (work.length) {
         // Find RFC 822 token types.
         var patterns = {
@@ -294,14 +294,14 @@ exports.headers.prototype = {
             which = null,
             match;
         for (i in patterns) {
-          if (match = patterns[i](work)) {
+          if (match = patterns[i].test(work)) {
             which = i;
             break;
           }
         }
 
         var token = match ? match[0] : 'work';
-        
+
         // Check for comments.
         if (token == '(') {
           // Comments are recursive. Can't regexp in JS.
@@ -315,7 +315,7 @@ exports.headers.prototype = {
               // Balanced pairs found.
               which = 'comment';
               // Extract up to the i-th unescaped parenthesis.
-              token = new RegExp("([^\(\)]*[()]){" + (i + 1) + "}")(work)[0];
+              token = new RegExp("([^\(\)]*[()]){" + (i + 1) + "}").exec(work)[0];
               break;
             }
           }
@@ -326,14 +326,14 @@ exports.headers.prototype = {
           case 'atom':
             stack.push(token);
             break;
-          
+
           case 'quoted':
             stack.push(unquote(token));
             break;
-            
+
           case 'literal':
             stack.push(unliteral(token));
-          
+
           case 'delimiter':
             switch (token) {
               case ';':
@@ -345,17 +345,17 @@ exports.headers.prototype = {
                 break;
             }
             break;
-          
+
           case 'whitespace':
             if (stack.length) {
               stack.push(token);
             }
             break;
-            
+
           case 'comment':
             stack.push(token);
             break;
-          
+
           default:
             return [ string, {} ];
         }
@@ -373,7 +373,7 @@ exports.headers.prototype = {
       return unquote(string);
     }
   },
-  
+
   /**
    * Generate MIME-formatted headers.
    */
@@ -383,7 +383,7 @@ exports.headers.prototype = {
       var items = [],
           prefix = key + ': ',
           value = this.fields[key];
-      
+
       if (!isArray(value)) {
         value = [ value ];
       }
@@ -397,12 +397,12 @@ exports.headers.prototype = {
           if (typeof param[i] != 'undefined') {
             item += '; ' + this.param(j, param[i]);
           }
-        } 
-        items.push(item); 
+        }
+        items.push(item);
       }
 
       out.push(key + ': ' + items.join(', '));
-    } 
+    }
     return out.join("\r\n") + "\r\n\r\n";
   },
 
@@ -472,7 +472,7 @@ exports.sniff = function (file, data) {
   if (!ansi && attempt.replace(/[^\n\r\t\u0020-\uFFFC]/g, '').length < .8 * data.length) {
     return [ type, { schema: 'termkit.hex' } ];
   }
-  
+
   // Fallback, escaped binary text output.
   return type;
 };
@@ -486,11 +486,11 @@ exports.base = function (type) {
     'application/x-perl': 'text',
     'application/x-php': 'text',
   };
-  
+
   if (map[type]) {
     type = map[type];
   }
-  
+
   return exports.default(type) || 'application/octet-stream';
 }
 

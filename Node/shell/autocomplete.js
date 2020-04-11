@@ -37,7 +37,7 @@ exports.autocomplete = function () {
 };
 
 exports.autocomplete.prototype = {
-  
+
   /**
    * Return autocompletion for given command context.
    */
@@ -63,7 +63,7 @@ exports.autocomplete.prototype = {
       }
       callback(matches);
     });
-        
+
     if (offset == 0) {
       // Match built-in commands.
       var matches = this.builtin(prefix, ignoreCase);
@@ -78,17 +78,17 @@ exports.autocomplete.prototype = {
         that.filesystem(path, prefix, { ignoreCase: ignoreCase, executable: true }, track(function (files) {
           matches = matches.concat(files);
         }));
-      })(paths[i]);      
+      })(paths[i]);
     }
     else {
       // Scan current dir for files.
       this.filesystem(cwd, prefix, { ignoreCase: ignoreCase }, track(function (files) {
         matches = files;
-      }));      
+      }));
     }
-    
+
   },
-  
+
   /**
    * Complete built-in commands.
    */
@@ -109,7 +109,7 @@ exports.autocomplete.prototype = {
     matches.sort();
     return matches;
   },
-  
+
   /**
    * Complete filesystem matches.
    */
@@ -118,7 +118,7 @@ exports.autocomplete.prototype = {
 
     // Trailing slashes.
     function trail(path) {
-      if (!(/\/$/(path))) {
+      if (!(/\/$/.test(path))) {
         path += '/';
       }
       return path;
@@ -127,7 +127,7 @@ exports.autocomplete.prototype = {
     // Normalize context.
     path = trail(path || process.cwd());
     prefix = prefix || '';
-    
+
     // Root-relative.
     if (prefix[0] == '/') {
       prefix = prefix.substring(1);
@@ -141,7 +141,7 @@ exports.autocomplete.prototype = {
       label = '~/';
       path = trail(process.env.HOME);
     }
-    
+
     // Subdirectories.
     if (prefix.indexOf('/') != -1) {
       var split = prefix.split(/\//g);
@@ -150,25 +150,25 @@ exports.autocomplete.prototype = {
       path += head;
       label += head;
     }
-    
+
     // Shorthand syntax for callback.
     if (typeof options == 'function') {
       callback = options;
       options = {};
     }
-    
+
     // Set options.
     options = extend({
       type: '*',
       ignoreCase: false,
     }, options || {});
-    
+
     // Completion callback.
     var matches = [],
         track = whenDone(function () {
       callback(matches);
     });
-    
+
     // Case handling.
     if (options.ignoreCase) {
       prefix = prefix.toLowerCase();
@@ -178,24 +178,24 @@ exports.autocomplete.prototype = {
     fs.readdir(path, track(function (err, files) {
       if (!err) {
         for (i in files) (function (file) {
-          
+
           // Case handling.
           var key = file;
           if (options.ignoreCase) {
             key = key.toLowerCase();
           }
-          
+
           // Prefix match.
           if (prefix == '' || key.indexOf(prefix) === 0) {
-            
+
             // Prepare values.
             var value = label + file,
                 ref = path + file;
-                
+
             // Stat the file.
             fs.stat(ref, track(function (error, stats) {
               if (error) return;
-              
+
               // Get correct type and suffix.
               var type = 'file',
                   suffix = ' ';
@@ -207,20 +207,20 @@ exports.autocomplete.prototype = {
               else if (stats.isFile() && (stats.mode & 0111)) {
                 type = 'command';
               }
-              
+
               // Apply filters.
               var include = true
               if (options.executable) {
                 include = type == 'command';
               }
-              
+
               include && matches.push(exports.autocomplete.match(value, value + suffix, type));
             }));
           }
         })(files[i]);
       }
     }));
-    
+
   },
 };
 

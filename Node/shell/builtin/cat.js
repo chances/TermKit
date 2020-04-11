@@ -1,9 +1,9 @@
 var fs = require('fs'),
-    view = require('view/view'),
-    whenDone = require('misc').whenDone,
-    meta = require('shell/meta'),
-    reader = require('shell/reader');
-    
+    view = require('../../view/view'),
+    whenDone = require('../../misc').whenDone,
+    meta = require('../../shell/meta'),
+    reader = require('../../shell/reader');
+
 exports.main = function (tokens, pipes, exit, environment) {
   var out = new view.bridge(pipes.viewOut);
 
@@ -15,7 +15,7 @@ exports.main = function (tokens, pipes, exit, environment) {
   }
 
   var files = tokens;
-  
+
   // Reader handler
   var progress, position;
   var handler = {
@@ -23,7 +23,7 @@ exports.main = function (tokens, pipes, exit, environment) {
      * Files have been opened, unified headers available.
      */
     begin: function (headers) {
-      
+
       // See if we need a progress bar.
       var size = headers.get('Content-Length');
       progress = size > 1024 * 1024; // yes, this is arbitrary
@@ -31,7 +31,7 @@ exports.main = function (tokens, pipes, exit, environment) {
         position = 0;
         out.print(view.progress('progress', 0, 0, size));
       }
-      
+
       // Forward headers.
       pipes.dataOut.write(headers.generate());
       process.stderr.write(headers.generate());
@@ -52,7 +52,7 @@ exports.main = function (tokens, pipes, exit, environment) {
         out.update('progress', { value: position });
       }
     },
-    
+
     /**
      * Done reading.
      */

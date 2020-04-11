@@ -1,6 +1,6 @@
-var view = require('view/view'),
-    reader = require('shell/reader'),
-    parseArgs = require('misc').parseArgs;
+var view = require('../../view/view'),
+    reader = require('../../shell/reader'),
+    parseArgs = require('../../misc').parseArgs;
 
 exports.main = function (tokens, pipes, exit, environment) {
   var out = new view.bridge(pipes.viewOut);
@@ -11,7 +11,7 @@ exports.main = function (tokens, pipes, exit, environment) {
 
   // Buffered mime reader handler.
   var handler = {
-    
+
     /**
      * Pipe open, headers found.
      */
@@ -28,7 +28,7 @@ exports.main = function (tokens, pipes, exit, environment) {
       // Pipe out.
       pipes.dataOut.write(data);
     },
-    
+
     /**
      * Pipe closed.
      */
@@ -37,7 +37,7 @@ exports.main = function (tokens, pipes, exit, environment) {
       exit();
     },
   };
-  
+
   // Reader callbacks
   var errors = 0;
   // Open
@@ -59,7 +59,7 @@ exports.main = function (tokens, pipes, exit, environment) {
     // Spawn files reader.
     var pipe = new reader.filesReader(files, readerOpen, readerClose, readerError);
   }
-  else {  
+  else {
     // Spawn data reader.
     var pipe = new reader.dataReader(pipes.dataIn, readerOpen, readerClose, readerError);
   }

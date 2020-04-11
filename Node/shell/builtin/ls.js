@@ -1,24 +1,24 @@
 var fs = require('fs'),
-    view = require('view/view'),
-    composePath = require('misc').composePath,
-    whenDone = require('misc').whenDone,
+    view = require('../../view/view'),
+    composePath = require('../../misc').composePath,
+    whenDone = require('../../misc').whenDone,
     EventEmitter = require('events').EventEmitter,
-    async = require('misc').async,
-    meta = require('shell/meta'),
-    expandPath = require('misc').expandPath,
-    parseArgs = require('misc').parseArgs;
+    async = require('../../misc').async,
+    meta = require('../../shell/meta'),
+    expandPath = require('../../misc').expandPath,
+    parseArgs = require('../../misc').parseArgs;
 
 exports.main = function (tokens, pipes, exit, environment) {
-  
+
   var out = new view.bridge(pipes.viewOut);
-  
+
   // Parse out directory references to list.
   var args = parseArgs(tokens),
       items = args.values,
       options = args.options;
 
   var hidden = options.a || options.A;
-                                                                                                                                                       
+
   // Default to working directory.
   if (!items.length) {
     items.push(process.cwd());
@@ -28,10 +28,10 @@ exports.main = function (tokens, pipes, exit, environment) {
   var errors = 0;
   var output = {};
   var track = whenDone(function () {
-    
+
     // Format data.
     var data = JSON.stringify(output);
-  
+
     // Prepare headers.
     var headers = new meta.headers();
     headers.set({
@@ -62,10 +62,10 @@ exports.main = function (tokens, pipes, exit, environment) {
           // Scan contents of found directories.
           fs.readdir(path, track(function (error, files) {
             if (!error) {
-              
+
               // Sort files.
               var children = [];
-              files.sort(function (a, b) { 
+              files.sort(function (a, b) {
                 return a.toLowerCase().localeCompare(b.toLowerCase());
               });
 

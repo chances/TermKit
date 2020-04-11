@@ -1,6 +1,6 @@
-var view = require('view/view'),
-    reader = require('shell/reader'),
-    parseArgs = require('misc').parseArgs;
+var view = require('../../view/view'),
+    reader = require('../../shell/reader'),
+    parseArgs = require('../../misc').parseArgs;
 
 exports.main = function (tokens, pipes, exit, environment) {
   var out = new view.bridge(pipes.viewOut);
@@ -10,21 +10,21 @@ exports.main = function (tokens, pipes, exit, environment) {
 
   var negative = options.v,
       matchKeys = options.k;
-  
+
   if (!args.values.length) {
     out.print("Usage: grep [-v] [-k] <pattern> [file] ...");
     exit(false);
   }
-  
+
   var pattern = args.values.shift(),
       files = args.values;
-  
+
   var json, tail = '';
-  
+
   // In-place grepper
   function grep(object, value, force) {
     var i;
-    
+
     if (object.constructor == String || object.constructor == Number) {
       // Match strings.
       return ((!matchKeys || force) && (negative ^ !!(''+object).match(value))) ? object : null;
@@ -38,7 +38,7 @@ exports.main = function (tokens, pipes, exit, environment) {
       // Prune empties.
       return object.length ? object : null;
     }
-    
+
     var out = {};
     for (i in object) {
       var item;
@@ -50,7 +50,7 @@ exports.main = function (tokens, pipes, exit, environment) {
         // Pass values through grep.
         item = grep(object[i], value);
       }
-      
+
       // Keep non-null items.
       if (item !== null) {
         out[i] = item;
@@ -66,7 +66,7 @@ exports.main = function (tokens, pipes, exit, environment) {
 
   // Buffered mime reader handler.
   var handler = {
-    
+
     /**
      * Pipe open, headers found.
      */
@@ -89,7 +89,7 @@ exports.main = function (tokens, pipes, exit, environment) {
       // Remove content-length, output rest.
       headers.set('Content-Length', null);
       pipes.dataOut.write(headers.generate());
-      
+
       return buffered;
     },
 
@@ -110,7 +110,7 @@ exports.main = function (tokens, pipes, exit, environment) {
 
       // Filter values recursively.
       data = grep(data, pattern);
-      
+
       if (json) {
         // Serialize
         data = JSON.stringify(data);
@@ -119,11 +119,11 @@ exports.main = function (tokens, pipes, exit, environment) {
         // Join lines.
         data = data.join("\n");
       }
-      
+
       // Pipe out.
       pipes.dataOut.write(data);
     },
-    
+
     /**
      * Pipe closed.
      */
@@ -162,7 +162,7 @@ exports.main = function (tokens, pipes, exit, environment) {
     // Spawn files reader.
     var pipe = new reader.filesReader(files, readerOpen, readerClose, readerError);
   }
-  else {  
+  else {
     // Spawn data reader.
     var pipe = new reader.dataReader(pipes.dataIn, readerOpen, readerClose, readerError);
   }

@@ -1,31 +1,33 @@
 #!/usr/bin/env node
 
-var termkit = {
+const path = require('path')
+
+const termkit = {
   version: 1,
 };
 
 // Load requirements.
-var http = require('http'),
-    io = require('socket.io'),
-    router = require("./router");
+const express = require('express');
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
+const router = require("./router");
 
 // Load config file.
-var config = require('./config').getConfig();
+const config = require('./config').getConfig();
 
-// Set up http server.
-var server = http.createServer(function (request, result) {
-//  result.writeHeader(200, {'Content-Type': 'text/html'});
-//  result.writeBody('<h1>TermKit</h1>');
-//  result.finish();
-});
+// Set up http filer server, delivering TermKit client.
+const webRoot = path.join(__dirname, '../HTML');
+app.use('/', express.static(path.join(webRoot, 'public')));
+app.use('/shared', express.static(path.join(webRoot, '../Shared')));
+app.use('/socket.io', express.static(path.join(webRoot, 'socket.io')));
 
 const port = 2222
 server.listen(port, () => {
-    if (server.listening) console.log(`Listening on port ${port}`);
+    if (server.listening) console.log(`Listening on *:${port}`);
 });
 
 // Set up WebSocket and handlers.
-var ioServer = io.listen(server);
-ioServer.sockets.on('connection', function (client) {
-  var p = new router.router(client);
+io.on('connection', function (client) {
+  const p = new router.router(client);
 });

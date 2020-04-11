@@ -1,0 +1,25 @@
+{
+  "name": "termkit",
+  "version": "0.0.1",
+  "description": "Experimental next gen terminal platform",
+  "main": "public/termkit.js",
+  "dependencies": {
+    "socket.io-client": "^1.0.0"
+  },
+  "devDependencies": {
+    "snowpack": "^1.6.0"
+  },
+  "scripts": {
+    "test": "../Node/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chances/TermKit.git"
+  },
+  "author": "Steven Wittens",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chances/TermKit/issues"
+  },
+  "homepage": "https://github.com/chances/TermKit#readme"
+}
